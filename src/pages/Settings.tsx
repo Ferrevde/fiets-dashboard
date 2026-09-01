@@ -1,43 +1,29 @@
-import { useState } from 'react';
-import { Save, Loader2, CheckCircle } from 'lucide-react';
+import { useSettings } from '../hooks/useSettings';
+import { Save, Loader2, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-
-interface SettingsForm {
-  bicycleCompensation: string;
-  commuteDistance: string;
-  carCostPerKm: string;
-}
-
-const initialForm: SettingsForm = {
-  bicycleCompensation: '0.23',
-  commuteDistance: '15',
-  carCostPerKm: '0.45',
-};
+import { Toast } from '../components/ui/Toast';
 
 export function Settings() {
-  const [form, setForm] = useState<SettingsForm>(initialForm);
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleChange = (field: keyof SettingsForm, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    if (saved) setSaved(false);
-  };
+  const {
+    settings,
+    errors,
+    isSaving,
+    toast,
+    updateField,
+    validateAndSave,
+    resetToDefaults,
+    dismissToast,
+  } = useSettings();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setSaving(false);
-    setSaved(true);
-    
-    // Reset saved state after 3 seconds
-    setTimeout(() => setSaved(false), 3000);
+    await validateAndSave();
+  };
+
+  const handleReset = () => {
+    resetToDefaults();
   };
 
   return (
@@ -62,9 +48,11 @@ export function Settings() {
                 type="number"
                 step="0.01"
                 min="0"
+                max="10"
                 placeholder="0.23"
-                value={form.bicycleCompensation}
-                onChange={(e) => handleChange('bicycleCompensation', e.target.value)}
+                value={settings.bikeCompensationPerKm}
+                onChange={(e) => updateField('bikeCompensationPerKm', parseFloat(e.target.value) || 0)}
+                error={errors.bikeCompensationPerKm}
                 helperText="EUR per kilometer cycled"
               />
             </div>
@@ -73,10 +61,12 @@ export function Settings() {
                 label="One-way commute distance"
                 type="number"
                 step="0.1"
-                min="0"
+                min="0.1"
+                max="500"
                 placeholder="15"
-                value={form.commuteDistance}
-                onChange={(e) => handleChange('commuteDistance', e.target.value)}
+                value={settings.oneWayDistanceKm}
+                onChange={(e) => updateField('oneWayDistanceKm', parseFloat(e.target.value) || 0)}
+                error={errors.oneWayDistanceKm}
                 helperText="Kilometers (one way)"
               />
             </div>
@@ -86,29 +76,40 @@ export function Settings() {
                 type="number"
                 step="0.01"
                 min="0"
+                max="10"
                 placeholder="0.45"
-                value={form.carCostPerKm}
-                onChange={(e) => handleChange('carCostPerKm', e.target.value)}
+                value={settings.carCostPerKm}
+                onChange={(e) => updateField('carCostPerKm', parseFloat(e.target.value) || 0)}
+                error={errors.carCostPerKm}
                 helperText="EUR per kilometer driven"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border-subtle flex justify-end">
+          <div className="pt-4 border-t border-border-subtle flex items-center justify-between gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              onClick={handleReset}
+              className="gap-2"
+            >
+              <RotateCcw className="h-5 w-5" aria-hidden="true" />
+              Reset to defaults
+            </Button>
             <Button
               type="submit"
               size="lg"
-              loading={saving}
+              loading={isSaving}
               className="gap-2"
             >
-              {saved ? (
+              {isSaving ? (
                 <>
-                  <CheckCircle className="h-5 w-5 text-accent-green" aria-hidden="true" />
-                  Saved
+                  <Loader2 className="h-5 w-5" aria-hidden="true" />
+                  Saving...
                 </>
               ) : (
                 <>
-                  {saving && <Loader2 className="h-5 w-5" aria-hidden="true" />}
                   <Save className="h-5 w-5" aria-hidden="true" />
                   Save settings
                 </>
@@ -161,7 +162,7 @@ export function Settings() {
               <div className="flex items-center justify-between">
                 <span className="text-body text-text-secondary">Monthly cycling compensation</span>
                 <span className="text-body font-semibold text-accent-green tabular-nums">
-                  € {(parseFloat(form.bicycleCompensation) * parseFloat(form.commuteDistance) * 2 * 20).toFixed(2)}
+                  € {(settings.bikeCompensationPerKm * settings.oneWayDistanceKm * 2 * 20).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -169,7 +170,7 @@ export function Settings() {
               <div className="flex items-center justify-between">
                 <span className="text-body text-text-secondary">Monthly car cost</span>
                 <span className="text-body font-semibold text-accent-red tabular-nums">
-                  € {(parseFloat(form.carCostPerKm) * parseFloat(form.commuteDistance) * 2 * 20).toFixed(2)}
+                  € {(settings.carCostPerKm * settings.oneWayDistanceKm * 2 * 20).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -178,8 +179,8 @@ export function Settings() {
                 <span className="text-body text-text-secondary">Potential monthly savings</span>
                 <span className="text-body font-semibold text-text-primary tabular-nums">
                   € {(
-                    (parseFloat(form.carCostPerKm) - parseFloat(form.bicycleCompensation)) * 
-                    parseFloat(form.commuteDistance) * 2 * 20
+                    (settings.carCostPerKm - settings.bikeCompensationPerKm) * 
+                    settings.oneWayDistanceKm * 2 * 20
                   ).toFixed(2)}
                 </span>
               </div>
@@ -187,6 +188,11 @@ export function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <Toast type={toast.type} message={toast.message} onDismiss={dismissToast} />
+      )}
     </div>
   );
 }

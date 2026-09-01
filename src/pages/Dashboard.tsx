@@ -1,8 +1,18 @@
-import { Bike, Car, MapPin, Route } from 'lucide-react';
+import { Bike, Car, MapPin, Route, Settings, ArrowRight } from 'lucide-react';
 import { StatCard } from '../components/ui/StatCard';
-import { Card, CardContent } from '../components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { hasSettings } from '../lib/settings';
+import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
+  const navigate = useNavigate();
+  const settingsConfigured = hasSettings();
+
+  const handleConfigureSettings = () => {
+    navigate('/settings');
+  };
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -14,6 +24,35 @@ export function Dashboard() {
           Overview of your commuting activity.
         </p>
       </div>
+
+      {/* Onboarding Card - shown when settings not configured */}
+      {!settingsConfigured && (
+        <Card variant="hover" padding="lg" className="border-accent-orange/30 bg-accent-orange/5">
+          <CardHeader>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 p-3 rounded-xl bg-accent-orange/10 border border-accent-orange/20 text-accent-orange">
+                <Settings className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-text-primary">Configure your commute settings</CardTitle>
+                <CardDescription className="mt-1">
+                  Start by setting up your bicycle compensation, commute distance, and car cost per kilometer to see personalized insights.
+                </CardDescription>
+              </div>
+              <Button
+                              variant="primary"
+                size="lg"
+                onClick={handleConfigureSettings}
+                className="flex-shrink-0 gap-2"
+              >
+                <Settings className="h-5 w-5" aria-hidden="true" />
+                Configure settings
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -79,7 +118,7 @@ export function Dashboard() {
               </div>
             </div>
             <div className="space-y-4">
-              {[
+                          {[
                 { label: 'Total cycling distance', value: '— km' },
                 { label: 'Total car distance', value: '— km' },
                 { label: 'Cycling compensation', value: '€ —' },
