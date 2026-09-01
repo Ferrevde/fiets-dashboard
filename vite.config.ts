@@ -1,7 +1,7 @@
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react' // of vue() / preact() afhankelijk van je specifieke plugin
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  base: '/fiets-dashboard/', // 👈 VOEG DEZE REGEL TOE
+  plugins: [/* je huidige plugins */],
 })
