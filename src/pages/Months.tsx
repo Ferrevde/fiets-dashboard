@@ -1,29 +1,33 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { Card, CardContent } from '../components/ui/Card';
+import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { cn } from '../lib/utils';
+import { useCommute } from '../hooks/useCommute';
+import { WorkdayList } from '../components/ui/WorkdayList';
 
 const months = [
-  { key: 'january', label: 'January', short: 'Jan' },
-  { key: 'february', label: 'February', short: 'Feb' },
-  { key: 'march', label: 'March', short: 'Mar' },
-  { key: 'april', label: 'April', short: 'Apr' },
-  { key: 'may', label: 'May', short: 'May' },
-  { key: 'june', label: 'June', short: 'Jun' },
-  { key: 'july', label: 'July', short: 'Jul' },
-  { key: 'august', label: 'August', short: 'Aug' },
-  { key: 'september', label: 'September', short: 'Sep' },
-  { key: 'october', label: 'October', short: 'Oct' },
-  { key: 'november', label: 'November', short: 'Nov' },
-  { key: 'december', label: 'December', short: 'Dec' },
+  { key: 'january', label: 'January', short: 'Jan', number: 1 },
+  { key: 'february', label: 'February', short: 'Feb', number: 2 },
+  { key: 'march', label: 'March', short: 'Mar', number: 3 },
+  { key: 'april', label: 'April', short: 'Apr', number: 4 },
+  { key: 'may', label: 'May', short: 'May', number: 5 },
+  { key: 'june', label: 'June', short: 'Jun', number: 6 },
+  { key: 'july', label: 'July', short: 'Jul', number: 7 },
+  { key: 'august', label: 'August', short: 'Aug', number: 8 },
+  { key: 'september', label: 'September', short: 'Sep', number: 9 },
+  { key: 'october', label: 'October', short: 'Oct', number: 10 },
+  { key: 'november', label: 'November', short: 'Nov', number: 11 },
+  { key: 'december', label: 'December', short: 'Dec', number: 12 },
 ] as const;
 
-export function Months() {
-  const [selectedMonth, setSelectedMonth] = useState<string>('january');
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+type MonthKey = typeof months[number]['key'];
 
-  const handleMonthSelect = (monthKey: string) => {
+export function Months() {
+  const [selectedMonth, setSelectedMonth] = useState<MonthKey>('january');
+  const [currentYear, setCurrentYear] = useState(2026);
+
+  const handleMonthSelect = (monthKey: MonthKey) => {
     setSelectedMonth(monthKey);
   };
 
@@ -32,6 +36,33 @@ export function Months() {
   };
 
   const selectedMonthData = months.find(m => m.key === selectedMonth);
+  const selectedMonthNumber = selectedMonthData?.number ?? 1;
+
+  // Use the commute hook for the selected month/year
+  const {
+    workdays,
+    isLoading,
+    getTransportForDate,
+    setTransportForDate,
+  } = useCommute(currentYear, selectedMonthNumber);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    let bikeDays = 0;
+    let carDays = 0;
+    
+    workdays.forEach(date => {
+      const transport = getTransportForDate(date);
+      if (transport === 'bike') bikeDays++;
+      else if (transport === 'car') carDays++;
+    });
+    
+    return {
+      totalWorkdays: workdays.length,
+      bikeDays,
+      carDays,
+    };
+  }, [workdays, getTransportForDate]);
 
   return (
     <div className="space-y-8">
@@ -121,9 +152,9 @@ export function Months() {
         })}
       </div>
 
-      {/* Selected Month Details */}
+      {/* Selected Month Details & Workday List */}
       <Card variant="hover" padding="lg">
-        <CardContent>
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <div className="p-4 rounded-2xl bg-accent-green/10 border border-accent-green/20 text-accent-green">
@@ -138,23 +169,34 @@ export function Months() {
             </div>
             <div className="text-right sm:text-left">
               <p className="text-body-sm text-text-secondary">Workdays</p>
-              <p className="text-heading-3 font-semibold text-text-primary tabular-nums">—</p>
+              <p className="text-heading-3 font-semibold text-text-primary tabular-nums">
+                {stats.totalWorkdays}
+              </p>
             </div>
             <div className="text-right sm:text-left">
               <p className="text-body-sm text-text-secondary">Cycling days</p>
-              <p className="text-heading-3 font-semibold text-accent-green tabular-nums">—</p>
+              <p className="text-heading-3 font-semibold text-accent-green tabular-nums">
+                {stats.bikeDays}
+              </p>
             </div>
             <div className="text-right sm:text-left">
               <p className="text-body-sm text-text-secondary">Car days</p>
-              <p className="text-heading-3 font-semibold text-accent-red tabular-nums">—</p>
+              <p className="text-heading-3 font-semibold text-accent-red tabular-nums">
+                {stats.carDays}
+              </p>
             </div>
           </div>
-          
-          <div className="mt-6 pt-6 border-t border-border-subtle">
-            <p className="text-body text-text-muted text-center">
-              Select a month above to view and track your daily commute. Workday tracking coming soon.
-            </p>
-          </div>
+        </CardHeader>
+        
+        <CardContent>
+          <WorkdayList
+            workdays={workdays}
+            year={currentYear}
+            month={selectedMonthNumber}
+            getTransportForDate={getTransportForDate}
+            onTransportChange={setTransportForDate}
+            isLoading={isLoading}
+          />
         </CardContent>
       </Card>
     </div>
