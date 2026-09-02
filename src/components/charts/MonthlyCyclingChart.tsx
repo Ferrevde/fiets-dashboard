@@ -1,0 +1,50 @@
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+interface MonthlyData {
+  month: string;
+  bikeDays: number;
+}
+
+interface MonthlyCyclingChartProps {
+  data: MonthlyData[];
+}
+
+export function MonthlyCyclingChart({ data }: MonthlyCyclingChartProps) {
+  return (
+    <div className="w-full h-72 md:h-96">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <XAxis
+            dataKey="month"
+            tick={{ fill: '#a1a1aa', fontSize: 12 }}
+            axisLine={{ stroke: '#27272a' }}
+            tickLine={false}
+          />
+          <YAxis
+            tick={{ fill: '#a1a1aa', fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            allowDecimals={false}
+          />
+          <Tooltip
+            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            contentStyle={{
+              backgroundColor: '#18181B',
+              border: '1px solid #27272a',
+              borderRadius: '12px',
+              color: '#fafafa',
+              fontSize: '13px',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            }}
+            labelStyle={{ color: '#fafafa', fontWeight: 600, marginBottom: '4px' }}
+          />
+          <Bar dataKey="bikeDays" radius={[6, 6, 0, 0]} animationDuration={500}>
+            {data.map((_, i) => (
+              <Cell key={`cell-${i}`} fill="#22c55e" />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
