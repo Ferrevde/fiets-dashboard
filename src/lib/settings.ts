@@ -4,33 +4,29 @@ export interface Settings {
   carCostPerKm: number;
 }
 
-const SETTINGS_KEY = 'fiets-dashboard-settings';
-
-const DEFAULT_SETTINGS: Settings = {
+export const DEFAULT_SETTINGS: Settings = {
   bikeCompensationPerKm: 0.23,
   oneWayDistanceKm: 15,
   carCostPerKm: 0.45,
 };
 
+/**
+ * Re-export the storage layer so existing call-sites of `loadSettings` etc.
+ * keep working. New code should import from `./storage` directly.
+ */
+export { settingsStorage as storage } from './storage';
+import { settingsStorage } from './storage';
+
 export function loadSettings(): Settings {
-  try {
-    const stored = localStorage.getItem(SETTINGS_KEY);
-    if (!stored) {
-      return DEFAULT_SETTINGS;
-    }
-    const parsed = JSON.parse(stored);
-    return { ...DEFAULT_SETTINGS, ...parsed };
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
+  return settingsStorage.load();
 }
 
 export function saveSettings(settings: Settings): void {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  settingsStorage.save(settings);
 }
 
 export function hasSettings(): boolean {
-  return localStorage.getItem(SETTINGS_KEY) !== null;
+  return settingsStorage.hasSaved();
 }
 
 export function validateSettings(settings: Partial<Settings>): { valid: boolean; errors: Partial<Record<keyof Settings, string>> } {
@@ -73,5 +69,5 @@ export function validateSettings(settings: Partial<Settings>): { valid: boolean;
 }
 
 export function getDefaultSettings(): Settings {
-  return DEFAULT_SETTINGS;
+  return { ...DEFAULT_SETTINGS };
 }
