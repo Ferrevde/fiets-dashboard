@@ -1,6 +1,6 @@
 import { useSettings } from '../hooks/useSettings';
 import { Save, Loader2, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Toast } from '../components/ui/Toast';
@@ -30,12 +30,7 @@ export function Settings() {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-heading-1 font-semibold text-text-primary tracking-tight">
-          Settings
-        </h1>
-        <p className="mt-2 text-body-lg text-text-secondary">
-          Configure your commute information.
-        </p>
+        <h1 className="text-heading-1 font-semibold text-text-primary tracking-tight">Settings</h1>
       </div>
 
       {/* Settings Form */}
@@ -118,76 +113,6 @@ export function Settings() {
           </div>
         </form>
       </Card>
-
-      {/* Additional Settings Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card variant="hover" padding="lg">
-          <CardHeader>
-            <CardTitle>About these settings</CardTitle>
-            <CardDescription>
-              These values are used to calculate your commuting costs and potential savings.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-xl bg-bg-main border border-border-subtle">
-              <p className="text-body-sm font-medium text-text-primary mb-2">Bicycle compensation</p>
-              <p className="text-body text-text-secondary">
-                The amount you receive per kilometer cycled to work. In the Netherlands, this is typically €0.23/km (2024 rate).
-              </p>
-            </div>
-            <div className="p-4 rounded-xl bg-bg-main border border-border-subtle">
-              <p className="text-body-sm font-medium text-text-primary mb-2">Commute distance</p>
-              <p className="text-body text-text-secondary">
-                The one-way distance from your home to your workplace. This is used to calculate round-trip distances.
-              </p>
-            </div>
-            <div className="p-4 rounded-xl bg-bg-main border border-border-subtle">
-              <p className="text-body-sm font-medium text-text-primary mb-2">Car cost per km</p>
-              <p className="text-body text-text-secondary">
-                The estimated cost per kilometer for driving your car, including fuel, maintenance, depreciation, and insurance.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card variant="hover" padding="lg">
-          <CardHeader>
-            <CardTitle>Calculation preview</CardTitle>
-            <CardDescription>
-              Based on your current settings (20 workdays/month)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-xl bg-bg-main border border-border-subtle">
-              <div className="flex items-center justify-between">
-                <span className="text-body text-text-secondary">Monthly cycling compensation</span>
-                <span className="text-body font-semibold text-accent-green tabular-nums">
-                  € {(settings.bikeCompensationPerKm * settings.oneWayDistanceKm * 2 * 20).toFixed(2)}
-                </span>
-              </div>
-            </div>
-            <div className="p-4 rounded-xl bg-bg-main border border-border-subtle">
-              <div className="flex items-center justify-between">
-                <span className="text-body text-text-secondary">Monthly car cost</span>
-                <span className="text-body font-semibold text-accent-red tabular-nums">
-                  € {(settings.carCostPerKm * settings.oneWayDistanceKm * 2 * 20).toFixed(2)}
-                </span>
-              </div>
-            </div>
-            <div className="p-4 rounded-xl bg-bg-main border border-border-subtle">
-              <div className="flex items-center justify-between">
-                <span className="text-body text-text-secondary">Potential monthly savings</span>
-                <span className="text-body font-semibold text-text-primary tabular-nums">
-                  € {(
-                    (settings.carCostPerKm - settings.bikeCompensationPerKm) * 
-                    settings.oneWayDistanceKm * 2 * 20
-                  ).toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Toast notification */}
       {toast && (

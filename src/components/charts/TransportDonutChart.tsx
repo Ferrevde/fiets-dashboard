@@ -28,15 +28,15 @@ export function TransportDonutChart({ bikeDays, carDays }: TransportDonutChartPr
   return (
     <div className="flex flex-col md:flex-row items-center gap-8">
       {/* Donut */}
-      <div className="relative w-48 h-48 flex-shrink-0">
+      <div className="relative w-56 h-56 flex-shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius="65%"
-              outerRadius="85%"
+              innerRadius="60%"
+              outerRadius="80%"
               startAngle={90}
               endAngle={-270}
               paddingAngle={2}

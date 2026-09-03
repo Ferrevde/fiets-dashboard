@@ -28,6 +28,8 @@ export function MonthlyCyclingChart({ data }: MonthlyCyclingChartProps) {
           />
           <Tooltip
             cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            formatter={(value: any) => [`${value ?? 0} cycling day${(value ?? 0) === 1 ? '' : 's'}`, '']}
+            labelFormatter={(label: any) => label ?? ''}
             contentStyle={{
               backgroundColor: '#18181B',
               border: '1px solid #27272a',

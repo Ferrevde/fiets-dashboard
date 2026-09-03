@@ -1,11 +1,23 @@
 import { useState, useCallback, useEffect } from 'react';
 import { loadMonthCommute, updateCommuteDay, type TransportType, type CommuteDay } from '../lib/commute';
 import { getWorkdaysForMonth } from '../lib/belgianHolidays';
+import { on } from '../lib/events';
 
 export function useCommute(year: number, month: number) {
   const [commuteDays, setCommuteDays] = useState<CommuteDay[]>([]);
   const [workdays, setWorkdays] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Listen to external commute updates (e.g., from other tabs or direct storage changes)
+  useEffect(() => {
+    const unsubscribe = on('commute', ({ year: y, month: m }) => {
+      if (y === year && m === month) {
+        const data = loadMonthCommute(year, month);
+        setCommuteDays(data);
+      }
+    });
+    return unsubscribe;
+  }, [year, month]);
 
   // Load workdays and commute data when year/month changes
   useEffect(() => {
