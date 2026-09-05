@@ -5,6 +5,36 @@ export default {
   async fetch(request: Request, env: Env, _ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    if (url.pathname === '/api/settings' && (request.method === 'GET' || request.method === 'POST')) {
+      const userId = url.searchParams.get('user') || 'anonymous';
+      const key = `fiets-data-${userId}`;
+      if (request.method === 'GET') {
+        const data = await env.KV?.get(key);
+        return new Response(data || JSON.stringify({ bikeComp: 0.25, distance: 5, carCost: 0.15 }), { headers: { 'Content-Type': 'application/json' } });
+      }
+      const body = await request.json() as any;
+      await env.KV?.put(key, JSON.stringify(body));
+      return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+    }
+
+    if (url.pathname === '/api/commute' && (request.method === 'GET' || request.method === 'POST' || request.method === 'DELETE')) {
+      const userId = url.searchParams.get('user') || 'anonymous';
+      const key = `fiets-data-${userId}`;
+      if (request.method === 'GET') {
+        const data = await env.KV?.get(key);
+        return new Response(data || JSON.stringify({ settings: null, days: [] }), { headers: { 'Content-Type': 'application/json' } });
+      }
+      if (request.method === 'POST') {
+        const body = await request.json() as any;
+        await env.KV?.put(key, JSON.stringify(body));
+        return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+      }
+      if (request.method === 'DELETE') {
+        await (env.KV as any)?.delete(key);
+        return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
     if (url.pathname === '/api/data' && request.method === 'GET') {
       try {
         const userId = url.searchParams.get('user') || 'anonymous';
