@@ -52,26 +52,23 @@ export function Months() {
         </div>
       </div>
 
-      {/* Compact calendar-style month selector */}
-      <div className="flex items-center gap-3">
-        <label htmlFor="month-select" className="text-body-sm font-medium text-text-secondary">Month</label>
-        <div className="flex gap-1.5 flex-wrap max-w-md">
-          {months.map(m => (
-            <button
-              key={m.key}
-              onClick={() => setSelectedMonth(m.key)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 border',
-                selectedMonth === m.key
-                  ? 'bg-bg-card-hover text-text-primary border-border-muted shadow-sm'
-                  : 'bg-bg-card text-text-secondary border-border-subtle hover:border-border-muted hover:text-text-primary'
-              )}
-              aria-pressed={selectedMonth === m.key}
-            >
-              {m.label.slice(0, 3)}
-            </button>
-          ))}
-        </div>
+      {/* Month selector — two rows */}
+      <div className="flex gap-1.5 overflow-x-auto">
+        {months.map(m => (
+          <button
+            key={m.key}
+            onClick={() => setSelectedMonth(m.key)}
+            className={cn(
+              'px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 border whitespace-nowrap',
+              selectedMonth === m.key
+                ? 'bg-bg-card-hover text-text-primary border-border-muted shadow-sm'
+                : 'bg-bg-card text-text-secondary border-border-subtle hover:border-border-muted hover:text-text-primary'
+            )}
+            aria-pressed={selectedMonth === m.key}
+          >
+            {m.label.slice(0, 3)}
+          </button>
+        ))}
       </div>
 
       {/* Two-column compact layout */}

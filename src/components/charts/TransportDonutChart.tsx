@@ -35,8 +35,8 @@ export function TransportDonutChart({ bikeDays, carDays }: TransportDonutChartPr
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius="60%"
-              outerRadius="80%"
+              innerRadius="65%"
+              outerRadius="85%"
               startAngle={90}
               endAngle={-270}
               paddingAngle={2}

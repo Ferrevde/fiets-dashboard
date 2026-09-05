@@ -26,34 +26,21 @@ export function Dashboard() {
 
       {/* Donut + Yearly stats at top */}
       {hasData ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <Card variant="hover" padding="lg">
-            <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          <Card variant="hover" padding="lg" className="h-full flex flex-col">
+            <CardContent className="flex-1 flex flex-col">
               <h2 className="text-heading-4 font-semibold text-text-primary mb-4">Transport split</h2>
-              <div className="flex items-center gap-6">
-                <div className="flex-1 flex justify-center">
-                  <TransportDonutChart bikeDays={yearly.bikeDays} carDays={yearly.carDays} />
-                </div>
-                <div className="flex-shrink-0 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-accent-green" aria-hidden="true" />
-                    <span className="text-sm font-medium text-text-primary">Bicycle</span>
-                    <span className="text-sm font-semibold text-text-primary tabular-nums">{yearly.bikeDays}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-accent-red" aria-hidden="true" />
-                    <span className="text-sm font-medium text-text-primary">Car</span>
-                    <span className="text-sm font-semibold text-text-primary tabular-nums">{yearly.carDays}</span>
-                  </div>
-                </div>
+              <div className="flex-1 flex items-center justify-center">
+                <TransportDonutChart bikeDays={yearly.bikeDays} carDays={yearly.carDays} />
               </div>
             </CardContent>
           </Card>
 
-          <Card variant="hover" padding="lg">
-            <CardContent>
+          <Card variant="hover" padding="lg" className="h-full flex flex-col">
+            <CardContent className="flex-1 flex flex-col">
               <h2 className="text-heading-4 font-semibold text-text-primary mb-4">Yearly statistics</h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="grid grid-cols-2 gap-2">
                 {[
                   { label: 'Cycling days', value: yearly.bikeDays, color: 'bg-accent-green/10 text-accent-green border-accent-green/20' },
                   { label: 'Car days', value: yearly.carDays, color: 'bg-accent-red/10 text-accent-red border-accent-red/20' },
@@ -69,6 +56,7 @@ export function Dashboard() {
                     <div className="text-lg font-semibold tabular-nums">{item.value}</div>
                   </div>
                 ))}
+              </div>
               </div>
             </CardContent>
           </Card>
