@@ -12,6 +12,7 @@ import type { Settings } from './settings';
 import { DEFAULT_SETTINGS, validateSettings } from './settings';
 import type { CommuteDay, TransportType, MonthCommuteData } from './commute';
 import { emit } from './events';
+import { loadSettingsFromD1, saveSettingsToD1, loadCommuteDaysFromD1, saveCommuteDayToD1, deleteCommuteDayFromD1 } from './d1';
 
 const STORAGE_PREFIX = 'fiets-dashboard';
 
@@ -53,11 +54,18 @@ function safeRemoveItem(key: string): void {
 
 export const settingsStorage = {
   load(): Settings {
+    // Try D1 first, fall back to localStorage
+    loadSettingsFromD1().then(s => {
+      if (s) {
+        const merged = { ...DEFAULT_SETTINGS, ...s };
+        safeSetItem(KEYS.settings, JSON.stringify(merged));
+        emit('settings', { settings: merged });
+      }
+    }).catch(() => {});
     const raw = safeGetItem(KEYS.settings);
     if (!raw) return { ...DEFAULT_SETTINGS };
     try {
       const parsed = JSON.parse(raw);
-      // Merge with defaults so new fields always exist
       return { ...DEFAULT_SETTINGS, ...parsed };
     } catch {
       return { ...DEFAULT_SETTINGS };
@@ -68,6 +76,8 @@ export const settingsStorage = {
     // Re-validate before persisting; we never store invalid data
     const { valid } = validateSettings(settings);
     if (!valid) return false;
+    // Persist to D1 (cloud) and keep localStorage as fallback
+    saveSettingsToD1(settings).catch(() => {});
     const ok = safeSetItem(KEYS.settings, JSON.stringify(settings));
     if (ok) emit('settings', { settings });
     return ok;
@@ -86,6 +96,14 @@ export const settingsStorage = {
 
 export const commuteStorage = {
   loadMonth(year: number, month: number): CommuteDay[] {
+    // Try D1 first, fall back to localStorage
+    loadCommuteDaysFromD1(year, month).then(days => {
+      if (days && days.length > 0) {
+        const data: MonthCommuteData = { year, month, days };
+        safeSetItem(KEYS.commute(year, month), JSON.stringify(data));
+        emit('commute', { year, month });
+      }
+    }).catch(() => {});
     const raw = safeGetItem(KEYS.commute(year, month));
     if (!raw) return [];
     try {
@@ -98,6 +116,9 @@ export const commuteStorage = {
 
   saveMonth(year: number, month: number, days: CommuteDay[]): boolean {
     const data: MonthCommuteData = { year, month, days };
+    // Persist to D1 (cloud) and keep localStorage as fallback
+    saveCommuteDayToD1(days[0]?.date || '', days[0]?.transportType || '').catch(() => {});
+    // For full month sync, use batch endpoint if available; here we keep localStorage primary
     const ok = safeSetItem(KEYS.commute(year, month), JSON.stringify(data));
     if (ok) emit('commute', { year, month });
     return ok;
@@ -115,6 +136,8 @@ export const commuteStorage = {
       days.push({ date, transportType });
     }
     commuteStorage.saveMonth(year, month, days);
+    // Sync to D1
+    saveCommuteDayToD1(date, transportType).catch(() => {});
     return days;
   },
 
@@ -124,6 +147,7 @@ export const commuteStorage = {
   removeDay(year: number, month: number, date: string): CommuteDay[] {
     const days = commuteStorage.loadMonth(year, month).filter(d => d.date !== date);
     commuteStorage.saveMonth(year, month, days);
+    deleteCommuteDayFromD1(date).catch(() => {});
     return days;
   },
 

@@ -1,0 +1,17 @@
+name = "fiets-dashboard"
+main = "src/index.ts"
+compatibility_date = "2026-09-05"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fiets-dashboard-db"
+database_id = "d193116f-bd1b-4f0e-af93-1a776d158a60"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "fiets-dashboard-db"
+database_id = "d193116f-bd1b-4f0e-af93-1a776d158a60"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
