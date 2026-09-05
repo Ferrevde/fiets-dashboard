@@ -15,5 +15,9 @@ declare global {
     waitUntil(promise: Promise<any>): void;
     passThroughOnException(): void;
   }
+  interface KVNamespace {
+    get(key: string): Promise<string | null>;
+    put(key: string, value: string): Promise<void>;
+  }
 }
 export {};

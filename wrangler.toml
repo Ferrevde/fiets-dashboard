@@ -6,5 +6,9 @@ compatibility_date = "2026-09-05"
 directory = "./dist"
 binding = "ASSETS"
 
+[[kv_namespaces]]
+binding = "KV"
+id = "e90e3e364a7f499fb05332a8792bd78c"
+
 [build]
 command = "npm run build"

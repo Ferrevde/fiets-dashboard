@@ -7,14 +7,17 @@ export default {
 
     if (url.pathname === '/api/data' && request.method === 'GET') {
       try {
-        const res = await env.ASSETS.fetch(new Request(url.origin + '/data.json'));
-        if (res.status === 200) return res;
+        const userId = url.searchParams.get('user') || 'anonymous';
+        const data = await env.KV?.get(`fiets-data-${userId}`);
+        if (data) return new Response(data, { headers: { 'Content-Type': 'application/json' } });
       } catch {}
       return new Response(JSON.stringify({ settings: null, days: [] }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (url.pathname === '/api/data' && request.method === 'POST') {
-      await request.json();
+      const body = await request.json() as any;
+      const userId = url.searchParams.get('user') || 'anonymous';
+      await env.KV?.put(`fiets-data-${userId}`, JSON.stringify(body));
       return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 

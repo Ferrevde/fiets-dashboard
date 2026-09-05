@@ -16,6 +16,15 @@ import { emit } from './events';
 const STORAGE_PREFIX = 'fiets-dashboard';
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
+function getUserId(): string {
+  let id = localStorage.getItem('fiets-user');
+  if (!id) {
+    id = 'user-' + Math.random().toString(36).slice(2, 9);
+    localStorage.setItem('fiets-user', id);
+  }
+  return id;
+}
+
 // ----- Keys ----------------------------------------------------------------
 
 const KEYS = {
@@ -72,7 +81,8 @@ export const settingsStorage = {
     if (ok) emit('settings', { settings });
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
-      fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ settings }) }).catch(() => {});
+      const userId = getUserId();
+      fetch(`/api/data?user=${userId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ settings }) }).catch(() => {});
     }, 500);
     return ok;
   },
@@ -106,7 +116,8 @@ export const commuteStorage = {
     if (ok) emit('commute', { year, month });
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
-      fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ year, month, days }) }).catch(() => {});
+      const userId = getUserId();
+      fetch(`/api/data?user=${userId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ year, month, days }) }).catch(() => {});
     }, 500);
     return ok;
   },
