@@ -1,1 +1,10 @@
-name = "fiets-dashboard"`nmain = "src/index.ts"`ncompatibility_date = "2026-09-05"`n`n[assets]`ndirectory = "./dist"`nbinding = "ASSETS"`n`n[build]`ncommand = "npm run build"
+name = "fiets-dashboard"
+main = "src/index.ts"
+compatibility_date = "2026-09-05"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+[build]
+command = "npm run build"
