@@ -19,7 +19,8 @@ export { settingsStorage as storage } from './storage';
 import { settingsStorage } from './storage';
 
 export function loadSettings(): Settings {
-  return settingsStorage.load();
+  const s = settingsStorage.load();
+  return (s && typeof s === 'object' && 'bikeCompensationPerKm' in s) ? (s as unknown as Settings) : { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 };
 }
 
 export function saveSettings(settings: Settings): void {

@@ -8,8 +8,8 @@ export const settingsStorage = {
 };
 export const commuteStorage = {
   loadMonth(_y: number, _m: number): any[] { return []; },
-  saveMonth(_y: number, _m: number, days: any[]): boolean { return true; },
-  upsertDay(_y: number, _m: number, _d: any): boolean { return true; },
+  saveMonth(_y: number, _m: number, _days: any[]): boolean { return true; },
+  upsertDay(_y: number, _m: number, _d: any, _t?: any): boolean { return true; },
   find(_y: number, _m: number, _d: any): any { return null; },
   clearAll(): void {},
 };
