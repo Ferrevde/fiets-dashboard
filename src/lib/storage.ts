@@ -17,6 +17,10 @@ const STORAGE_PREFIX = 'fiets-dashboard';
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function getUserId(): string {
+  const account = localStorage.getItem('fiets-account');
+  if (account) {
+    try { return JSON.parse(account).name; } catch {}
+  }
   let id = localStorage.getItem('fiets-user');
   if (!id) {
     id = 'user-' + Math.random().toString(36).slice(2, 9);
