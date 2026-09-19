@@ -27,7 +27,16 @@ export function AccountPrompt() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && password) create(name.trim(), password);
+    if (!name.trim() || !password) return;
+    if (mode === 'create') {
+      fetch(`/api/data?key=account-${name.trim()}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), password }) }).catch(() => {});
+      create(name.trim(), password);
+    } else {
+      fetch(`/api/data?key=account-${name.trim()}`).then(r => r.json()).then(d => {
+        if (d?.password === password) create(name.trim(), password);
+        else alert('Wrong password');
+      }).catch(() => alert('Login failed'));
+    }
   };
 
   return (

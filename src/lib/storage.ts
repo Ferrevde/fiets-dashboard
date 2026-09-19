@@ -1,10 +1,12 @@
 import { emit } from "./events";
-const KEY = "fiets-data";
+// KV key uses account name from localStorage
 export const settingsStorage = {
-  async load() { try { const r = await fetch(`/api/data?key=${KEY}`); const d = await r.json(); return d?.settings || { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 }; } catch { return { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 }; } },
-  save(s: any): boolean { fetch(`/api/data?key=${KEY}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: s }) }).catch(() => {}); emit("settings", { settings: s }); return true; },
+  async load() {   const account = localStorage.getItem('fiets-account');
+  const name = account ? JSON.parse(account).name : 'fiets-data';
+  try { const r = await fetch(`/api/data?key=${name}`); const d = await r.json(); return d?.settings || { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 }; } catch { return { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 }; } },
+  save(s: any): boolean { fetch(`/api/data?key=${name}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: s }) }).catch(() => {}); emit("settings", { settings: s }); return true; },
   hasSaved(): boolean { return true; },
-  clear(): void { fetch(`/api/data?key=${KEY}`, { method: "DELETE" }).catch(() => {}); },
+  clear(): void { fetch(`/api/data?key=${name}`, { method: "DELETE" }).catch(() => {}); },
 };
 export const commuteStorage = {
   loadMonth(_y: number, _m: number): any[] { return []; },
