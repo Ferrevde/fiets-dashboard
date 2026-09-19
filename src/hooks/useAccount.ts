@@ -23,5 +23,10 @@ export function useAccount() {
     localStorage.removeItem('fiets-account');
   };
 
-  return { account, ready, create, clear };
+  const logout = () => {
+    clear();
+    window.location.reload();
+  };
+
+  return { account, ready, create, clear, logout };
 }
