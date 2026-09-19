@@ -29,10 +29,15 @@ export function AccountPrompt() {
     e.preventDefault();
     if (!name.trim() || !password) return;
     if (mode === 'create') {
-      fetch(`/api/data?key=account-${name.trim()}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), password }) }).catch(() => {});
-      create(name.trim(), password);
+      fetch(`/api/data?key=${name.trim()}`).then(r => r.json()).then(d => {
+        if (d && d.password) { alert('Account already exists'); }
+        else {
+          fetch(`/api/data?key=${name.trim()}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), password }) }).catch(() => {});
+          create(name.trim(), password);
+        }
+      }).catch(() => {});
     } else {
-      fetch(`/api/data?key=account-${name.trim()}`).then(r => r.json()).then(d => {
+      fetch(`/api/data?key=${name.trim()}`).then(r => r.json()).then(d => {
         if (d?.password === password) create(name.trim(), password);
         else alert('Wrong password');
       }).catch(() => alert('Login failed'));

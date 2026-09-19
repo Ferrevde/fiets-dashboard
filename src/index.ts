@@ -6,33 +6,33 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/settings' && (request.method === 'GET' || request.method === 'POST')) {
-      const userId = url.searchParams.get('user') || 'anonymous';
       const postBody = request.method === 'POST' ? await request.json() as any : null;
-      const accountName = postBody?.accountName || url.searchParams.get('account') || userId;
-      const key = `fiets-data-${accountName}`;
+      const accountName = postBody?.accountName || url.searchParams.get('key') || 'anonymous';
+      const kvKey = `fiets-data-${accountName}`;
       if (request.method === 'GET') {
-        const data = await env.KV?.get(key);
+        const data = await env.KV?.get(kvKey);
         return new Response(data || JSON.stringify({ bikeComp: 0.25, distance: 5, carCost: 0.15 }), { headers: { 'Content-Type': 'application/json' } });
       }
-      const body = await request.json() as any;
-      await env.KV?.put(key, JSON.stringify(body));
-      return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+      if (request.method === 'POST') {
+        await env.KV?.put(kvKey, JSON.stringify(postBody));
+        return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+      }
     }
 
     if (url.pathname === '/api/commute' && (request.method === 'GET' || request.method === 'POST' || request.method === 'DELETE')) {
-      const userId = url.searchParams.get('user') || 'anonymous';
-      const key = `fiets-data-${userId}`;
+      const accountName = url.searchParams.get('key') || 'anonymous';
+      const kvKey = `fiets-data-${accountName}`;
       if (request.method === 'GET') {
-        const data = await env.KV?.get(key);
+        const data = await env.KV?.get(kvKey);
         return new Response(data || JSON.stringify({ settings: null, days: [] }), { headers: { 'Content-Type': 'application/json' } });
       }
       if (request.method === 'POST') {
         const postBody = await request.json() as any;
-        await env.KV?.put(key, JSON.stringify(postBody));
+        await env.KV?.put(kvKey, JSON.stringify(postBody));
         return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       }
       if (request.method === 'DELETE') {
-        await (env.KV as any)?.delete(key);
+        await (env.KV as any)?.delete(kvKey);
         return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       }
     }
