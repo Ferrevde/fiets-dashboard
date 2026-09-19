@@ -72,6 +72,13 @@ function safeRemoveItem(key: string): void {
 
 export const settingsStorage = {
   load(): Settings {
+    const userId = getUserId();
+    fetch(`/api/data?user=${userId}`).then(r => r.json()).then(data => {
+      if (data?.settings) {
+        safeSetItem(KEYS.settings, JSON.stringify(data.settings));
+        emit('settings', { settings: data.settings });
+      }
+    }).catch(() => {});
     const raw = safeGetItem(KEYS.settings);
     if (!raw) return { ...DEFAULT_SETTINGS };
     try {
