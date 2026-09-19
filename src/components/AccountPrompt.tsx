@@ -30,7 +30,7 @@ export function AccountPrompt() {
     if (!name.trim() || !password) return;
     if (mode === 'create') {
       fetch(`/api/data?key=${name.trim()}`).then(r => r.json()).then(d => {
-        if (d && d.password) { alert('Account already exists'); }
+        if (d && d.password && d.name === name.trim()) { alert('Account already exists'); }
         else {
           fetch(`/api/data?key=${name.trim()}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), password }) }).catch(() => {});
           create(name.trim(), password);

@@ -7,7 +7,7 @@ export default {
 
     if (url.pathname === '/api/settings' && (request.method === 'GET' || request.method === 'POST')) {
       const postBody = request.method === 'POST' ? await request.json() as any : null;
-      const accountName = postBody?.accountName || url.searchParams.get('key') || 'anonymous';
+      const accountName = (postBody?.name || postBody?.accountName || url.searchParams.get('key') || 'anonymous').trim();
       const kvKey = `fiets-data-${accountName}`;
       if (request.method === 'GET') {
         const data = await env.KV?.get(kvKey);
