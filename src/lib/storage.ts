@@ -25,6 +25,11 @@ function getUserId(): string {
   return id;
 }
 
+export function getUserKey(accountName?: string): string {
+  if (accountName && accountName.trim()) return `fiets-data-${accountName.trim()}`;
+  return `fiets-data-${getUserId()}`;
+}
+
 // ----- Keys ----------------------------------------------------------------
 
 const KEYS = {

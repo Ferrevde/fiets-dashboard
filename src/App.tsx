@@ -4,7 +4,13 @@ import { Dashboard } from './pages/Dashboard';
 import { Months } from './pages/Months';
 import { Settings } from './pages/Settings';
 
+import { AccountPrompt } from './components/AccountPrompt';
+import { useAccount } from './hooks/useAccount';
+
 function App() {
+  const { account, ready } = useAccount();
+  if (!ready) return <div className="min-h-screen bg-[#09090B]" />;
+  if (!account) return <AccountPrompt />;
   return (
     <BrowserRouter>
       <Routes>

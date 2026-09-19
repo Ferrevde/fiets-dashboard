@@ -2,6 +2,7 @@ export interface Settings {
   bikeCompensationPerKm: number;
   oneWayDistanceKm: number;
   carCostPerKm: number;
+  userName?: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {

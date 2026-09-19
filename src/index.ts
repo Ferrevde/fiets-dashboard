@@ -7,7 +7,9 @@ export default {
 
     if (url.pathname === '/api/settings' && (request.method === 'GET' || request.method === 'POST')) {
       const userId = url.searchParams.get('user') || 'anonymous';
-      const key = `fiets-data-${userId}`;
+      const postBody = request.method === 'POST' ? await request.json() as any : null;
+      const accountName = postBody?.accountName || url.searchParams.get('account') || userId;
+      const key = `fiets-data-${accountName}`;
       if (request.method === 'GET') {
         const data = await env.KV?.get(key);
         return new Response(data || JSON.stringify({ bikeComp: 0.25, distance: 5, carCost: 0.15 }), { headers: { 'Content-Type': 'application/json' } });
@@ -25,8 +27,8 @@ export default {
         return new Response(data || JSON.stringify({ settings: null, days: [] }), { headers: { 'Content-Type': 'application/json' } });
       }
       if (request.method === 'POST') {
-        const body = await request.json() as any;
-        await env.KV?.put(key, JSON.stringify(body));
+        const postBody = await request.json() as any;
+        await env.KV?.put(key, JSON.stringify(postBody));
         return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       }
       if (request.method === 'DELETE') {
