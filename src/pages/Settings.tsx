@@ -5,7 +5,11 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Toast } from '../components/ui/Toast';
 
+import { useAccount } from '../hooks/useAccount';
+import { LogOut } from 'lucide-react';
+
 export function Settings() {
+  const { account, logout } = useAccount();
   const {
     settings,
     errors,
@@ -29,8 +33,12 @@ export function Settings() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-heading-1 font-semibold text-text-primary tracking-tight">Settings</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-heading-1 font-semibold text-text-primary tracking-tight">Settings</h1>
+          <p className="text-text-secondary">Account: <span className="text-text-primary font-medium">{account?.name || '—'}</span></p>
+        </div>
+        <Button variant="outline" size="sm" onClick={logout} className="gap-2"><LogOut className="h-4 w-4" /> Logout</Button>
       </div>
 
       {/* Settings Form */}
