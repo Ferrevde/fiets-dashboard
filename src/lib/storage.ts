@@ -2,7 +2,7 @@ import { emit } from "./events";
 // KV key uses account name from localStorage
 export const settingsStorage = {
   async load() {   const account = localStorage.getItem('fiets-account');
-  const name = account ? JSON.parse(account).name : 'fiets-data';
+  const name = account ? JSON.parse(account).name : 'anonymous';
   try { const r = await fetch(`/api/data?key=${name}`); const d = await r.json(); return d?.settings || { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 }; } catch { return { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 }; } },
   save(s: any): boolean { fetch(`/api/data?key=${name}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: s }) }).catch(() => {}); emit("settings", { settings: s }); return true; },
   hasSaved(): boolean { return true; },
