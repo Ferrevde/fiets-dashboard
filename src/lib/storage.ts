@@ -41,13 +41,18 @@ export const settingsStorage = {
 export const commuteStorage = {
   async loadMonth(year: number, month: number): Promise<any[]> {
     const name = getAccountName();
+    const url = buildApiUrl(`fiets-commute-${name}-${year}-${month}`);
+    console.log('[loadMonth] fetching:', url);
     try {
-      const res = await fetch(buildApiUrl(`fiets-commute-${name}-${year}-${month}`));
+      const res = await fetch(url);
+      console.log('[loadMonth] response status:', res.status);
       if (!res.ok) {
         const text = await res.text();
+        console.error('[loadMonth] error response:', text);
         throw new Error(`Failed to load commute: ${res.status} ${text}`);
       }
       const data = await res.json();
+      console.log('[loadMonth] data:', data);
       return data?.days || [];
     } catch (err) {
       console.error('commuteStorage.loadMonth error:', err);
