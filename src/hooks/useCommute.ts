@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { commuteStorage } from '../lib/storage';
 import { getWorkdaysForMonth } from '../lib/belgianHolidays';
 import { on } from '../lib/events';
@@ -8,22 +8,28 @@ export function useCommute(year: number, month: number) {
   const [commuteDays, setCommuteDays] = useState<CommuteDay[]>([]);
   const [workdays, setWorkdays] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMountedRef = useRef(true);
 
   // Load workdays and commute data when year/month changes
   const loadData = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsLoading(true);
     const wds = getWorkdaysForMonth(year, month);
     setWorkdays(wds);
     const data = await commuteStorage.loadMonth(year, month);
-    setCommuteDays(data);
-    setIsLoading(false);
+    if (isMountedRef.current) {
+      setCommuteDays(data);
+      setIsLoading(false);
+    }
   }, [year, month]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadData();
+    return () => { isMountedRef.current = false; };
   }, [loadData]);
 
-  // Listen to external commute updates (e.g., from other tabs or direct storage changes)
+  // Listen to external commute updates (e.g., from other tabs)
   useEffect(() => {
     const unsubscribe = on('commute', ({ year: y, month: m }) => {
       if (y === year && m === month) {
@@ -42,9 +48,8 @@ export function useCommute(year: number, month: number) {
     if (transportType === null) {
       // Clear the selection locally
       setCommuteDays(prev => prev.filter(d => d.date !== date));
-      // Note: Could add a remove function in storage if needed
     } else {
-      await commuteStorage.upsertDay(year, month, date, transportType);
+      // Update local state immediately for responsive UI
       setCommuteDays(prev => {
         const existingIndex = prev.findIndex(d => d.date === date);
         if (existingIndex >= 0) {
@@ -55,6 +60,8 @@ export function useCommute(year: number, month: number) {
           return [...prev, { date, transportType }];
         }
       });
+      // Then persist to storage (fire and forget, event will handle cross-tab sync)
+      commuteStorage.upsertDay(year, month, date, transportType).catch(console.error);
     }
   }, [year, month]);
 

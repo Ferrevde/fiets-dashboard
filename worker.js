@@ -77,7 +77,7 @@ export default {
       if (key.startsWith('fiets-settings-')) {
         if (request.method === 'GET') {
           const data = await env.KV.get(key, 'json');
-          return new Response(JSON.stringify(data?.settings || {}), { headers: corsHeaders });
+          return new Response(JSON.stringify({ settings: data?.settings || {} }), { headers: corsHeaders });
         }
 
         if (request.method === 'POST') {
