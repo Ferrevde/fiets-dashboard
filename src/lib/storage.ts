@@ -57,7 +57,7 @@ export const commuteStorage = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ days }),
     }).catch(() => {});
-    emit("commute", { year, month });
+    // No emit here - local state already updated, event causes race with KV eventual consistency
     return true;
   },
   async upsertDay(year: number, month: number, date: string, transportType: any): Promise<boolean> {
