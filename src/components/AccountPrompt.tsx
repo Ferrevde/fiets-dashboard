@@ -6,32 +6,8 @@ import { Card } from '../components/ui/Card';
 
 import { LogOut } from 'lucide-react';
 
-const KV_KEY = 'fiets-data-anonymous';
-
-async function checkAccountExists(name: string): Promise<{ name: string; password: string } | null> {
-  try {
-    const res = await fetch(`/api/data?key=${KV_KEY}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data?.name === name.trim() && data?.password) {
-      return { name: data.name, password: data.password };
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-async function createAccountInKV(name: string, password: string): Promise<void> {
-  await fetch(`/api/data?key=${KV_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: name.trim(), password }),
-  });
-}
-
 export function AccountPrompt() {
-  const { account, ready, create, logout } = useAccount();
+  const { account, ready, create, login, logout } = useAccount();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'create' | 'login'>('create');
@@ -55,21 +31,14 @@ export function AccountPrompt() {
     setError('');
     if (!name.trim() || !password) return;
 
-    if (mode === 'create') {
-      const existing = await checkAccountExists(name);
-      if (existing) {
-        setError('Account already exists');
-        return;
+    try {
+      if (mode === 'create') {
+        await create(name, password);
+      } else {
+        await login(name, password);
       }
-      await createAccountInKV(name, password);
-      create(name.trim(), password);
-    } else {
-      const existing = await checkAccountExists(name);
-      if (!existing || existing.password !== password) {
-        setError('Wrong password');
-        return;
-      }
-      create(existing.name, password);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
     }
   };
 
