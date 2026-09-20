@@ -1,22 +1,18 @@
 import { emit } from "./events";
 import { buildApiUrl } from "./api";
 
-const KV_KEY = 'fiets-user-anonymous';
-
-async function getAccountName(): Promise<string> {
-  try {
-    const res = await fetch(buildApiUrl(KV_KEY));
-    if (!res.ok) return 'anonymous';
-    const data = await res.json();
-    return data?.name || 'anonymous';
-  } catch {
-    return 'anonymous';
+function getAccountName(): string {
+  // Read from localStorage where useAccount stores the logged-in user's name
+  if (typeof window !== 'undefined') {
+    const name = localStorage.getItem('fiets-account-name');
+    if (name) return name;
   }
+  return 'anonymous';
 }
 
 export const settingsStorage = {
   async load() {
-    const name = await getAccountName();
+    const name = getAccountName();
     try { 
       const r = await fetch(buildApiUrl(`fiets-settings-${name}`)); 
       const d = await r.json(); 
@@ -26,7 +22,7 @@ export const settingsStorage = {
     }
   },
   async save(s: any): Promise<boolean> {
-    const name = await getAccountName();
+    const name = getAccountName();
     await fetch(buildApiUrl(`fiets-settings-${name}`), { 
       method: "POST", 
       headers: { "Content-Type": "application/json" }, 
@@ -37,14 +33,14 @@ export const settingsStorage = {
   },
   hasSaved(): boolean { return true; },
   async clear(): Promise<void> {
-    const name = await getAccountName();
+    const name = getAccountName();
     await fetch(buildApiUrl(`fiets-settings-${name}`), { method: "DELETE" }).catch(() => {});
   },
 };
 
 export const commuteStorage = {
   async loadMonth(year: number, month: number): Promise<any[]> {
-    const name = await getAccountName();
+    const name = getAccountName();
     try {
       const res = await fetch(buildApiUrl(`fiets-commute-${name}-${year}-${month}`));
       if (!res.ok) return [];
@@ -55,7 +51,7 @@ export const commuteStorage = {
     }
   },
   async saveMonth(year: number, month: number, days: any[]): Promise<boolean> {
-    const name = await getAccountName();
+    const name = getAccountName();
     await fetch(buildApiUrl(`fiets-commute-${name}-${year}-${month}`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -76,7 +72,7 @@ export const commuteStorage = {
     return days.find(d => d.date === date) || null;
   },
   async clearAll(): Promise<void> {
-    const name = await getAccountName();
+    const name = getAccountName();
     for (let year = 2020; year <= 2030; year++) {
       for (let month = 1; month <= 12; month++) {
         await fetch(buildApiUrl(`fiets-commute-${name}-${year}-${month}`), { method: "DELETE" }).catch(() => {});
