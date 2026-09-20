@@ -18,13 +18,13 @@ export const DEFAULT_SETTINGS: Settings = {
 export { settingsStorage as storage } from './storage';
 import { settingsStorage } from './storage';
 
-export function loadSettings(): Settings {
-  const s = settingsStorage.load();
+export async function loadSettings(): Promise<Settings> {
+  const s = await settingsStorage.load();
   return (s && typeof s === 'object' && 'bikeCompensationPerKm' in s) ? (s as unknown as Settings) : { bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 };
 }
 
-export function saveSettings(settings: Settings): void {
-  settingsStorage.save(settings);
+export async function saveSettings(settings: Settings): Promise<void> {
+  await settingsStorage.save(settings);
 }
 
 export function hasSettings(): boolean {

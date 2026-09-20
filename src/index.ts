@@ -7,14 +7,14 @@ export default {
 
     if (url.pathname === '/api/settings' && (request.method === 'GET' || request.method === 'POST')) {
       const postBody = request.method === 'POST' ? await request.json() as any : null;
-      const accountName = (postBody?.name || postBody?.accountName || url.searchParams.get('key') || 'anonymous').trim();
+      const accountName = (url.searchParams.get('key') || 'anonymous').trim();
       const kvKey = `fiets-data-${accountName}`;
       if (request.method === 'GET') {
         const data = await env.KV?.get(kvKey);
         return new Response(data || JSON.stringify({ bikeComp: 0.25, distance: 5, carCost: 0.15 }), { headers: { 'Content-Type': 'application/json' } });
       }
       if (request.method === 'POST') {
-        await env.KV?.put(kvKey, JSON.stringify(postBody));
+        await env.KV?.put(kvKey, JSON.stringify({ ...postBody, accountName }));
         return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       }
     }

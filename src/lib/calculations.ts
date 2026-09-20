@@ -169,13 +169,13 @@ export function calculateMonthlyStats(
 /**
  * Convenience: load the month from storage and compute stats.
  */
-export function calculateMonthlyStatsFromStorage(
+export async function calculateMonthlyStatsFromStorage(
   year: number,
   month: number,
   settings: Settings,
   totalWorkdays: number,
-): MonthlyStats {
-  const days = commuteStorage.loadMonth(year, month);
+): Promise<MonthlyStats> {
+  const days = await commuteStorage.loadMonth(year, month);
   return calculateMonthlyStats(year, month, days, settings, totalWorkdays);
 }
 

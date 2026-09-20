@@ -1,12 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Settings } from '../lib/settings';
 import { loadSettings, saveSettings, validateSettings, getDefaultSettings } from '../lib/settings';
 
 export function useSettings() {
-  const [settings, setSettings] = useState<Settings>(() => loadSettings());
+  const [settings, setSettings] = useState<Settings>({ bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 });
   const [errors, setErrors] = useState<Partial<Record<keyof Settings, string>>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Load settings on mount
+  useEffect(() => {
+    let mounted = true;
+    loadSettings().then(s => {
+      if (mounted) setSettings(s);
+    });
+    return () => { mounted = false; };
+  }, []);
 
   const updateField = useCallback(<K extends keyof Settings>(field: K, value: Settings[K]) => {
     setSettings(prev => ({ ...prev, [field]: value }));
@@ -28,7 +37,7 @@ export function useSettings() {
 
     setIsSaving(true);
     try {
-      saveSettings(settings);
+      await saveSettings(settings);
       setToast({ type: 'success', message: 'Instellingen opgeslagen' });
       return true;
     } catch {
@@ -39,10 +48,11 @@ export function useSettings() {
     }
   }, [settings]);
 
-  const resetToDefaults = useCallback(() => {
+  const resetToDefaults = useCallback(async () => {
     const defaults = getDefaultSettings();
     setSettings(defaults);
     setErrors({});
+    await saveSettings(defaults);
   }, []);
 
   const dismissToast = useCallback(() => {

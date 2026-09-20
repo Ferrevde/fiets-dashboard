@@ -21,26 +21,25 @@ export interface MonthCommuteData {
  */
 import { commuteStorage } from './storage';
 
-export function loadMonthCommute(year: number, month: number): CommuteDay[] {
+export async function loadMonthCommute(year: number, month: number): Promise<CommuteDay[]> {
   return commuteStorage.loadMonth(year, month);
 }
 
-export function saveMonthCommute(year: number, month: number, days: CommuteDay[]): void {
-  commuteStorage.saveMonth(year, month, days);
+export async function saveMonthCommute(year: number, month: number, days: CommuteDay[]): Promise<boolean> {
+  return commuteStorage.saveMonth(year, month, days);
 }
 
-export function updateCommuteDay(year: number, month: number, date: string, transportType: TransportType): void {
-  commuteStorage.upsertDay(year, month, date, transportType);
+export async function updateCommuteDay(year: number, month: number, date: string, transportType: TransportType): Promise<boolean> {
+  return commuteStorage.upsertDay(year, month, date, transportType);
 }
 
-export function getCommuteDay(year: number, month: number, date: string): TransportType | null {
-  const days = commuteStorage.loadMonth(year, month);
-  const day = days.find(d => d.date === date);
+export async function getCommuteDay(year: number, month: number, date: string): Promise<TransportType | null> {
+  const day = await commuteStorage.find(year, month, date);
   return day?.transportType ?? null;
 }
 
-export function clearAllCommuteData(): void {
-  commuteStorage.clearAll();
+export async function clearAllCommuteData(): Promise<void> {
+  return commuteStorage.clearAll();
 }
 
 /**
