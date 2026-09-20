@@ -16,11 +16,15 @@ async function loadAccountFromKV(name: string): Promise<{ name: string; password
 }
 
 async function saveAccountToKV(name: string, password: string): Promise<void> {
-  await fetch(buildApiUrl(`fiets-user-${name.trim()}`), {
+  const res = await fetch(buildApiUrl(`fiets-user-${name.trim()}`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: name.trim(), password }),
   });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Account already exists' }));
+    throw new Error(err.error || 'Account already exists');
+  }
 }
 
 async function checkAccountExists(name: string): Promise<{ name: string; password: string } | null> {
