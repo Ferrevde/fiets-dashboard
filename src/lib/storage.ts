@@ -43,10 +43,14 @@ export const commuteStorage = {
     const name = getAccountName();
     try {
       const res = await fetch(buildApiUrl(`fiets-commute-${name}-${year}-${month}`));
-      if (!res.ok) return [];
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to load commute: ${res.status} ${text}`);
+      }
       const data = await res.json();
       return data?.days || [];
-    } catch {
+    } catch (err) {
+      console.error('commuteStorage.loadMonth error:', err);
       return [];
     }
   },

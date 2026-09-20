@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { commuteStorage } from '../lib/storage';
 import { getWorkdaysForMonth } from '../lib/belgianHolidays';
 import { on } from '../lib/events';
@@ -8,26 +8,20 @@ export function useCommute(year: number, month: number) {
   const [commuteDays, setCommuteDays] = useState<CommuteDay[]>([]);
   const [workdays, setWorkdays] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const isMountedRef = useRef(true);
 
   // Load workdays and commute data when year/month changes
   const loadData = useCallback(async () => {
-    if (!isMountedRef.current) return;
     setIsLoading(true);
     const wds = getWorkdaysForMonth(year, month);
     setWorkdays(wds);
     const data = await commuteStorage.loadMonth(year, month);
-    if (isMountedRef.current) {
-      setCommuteDays(data);
-      setIsLoading(false);
-    }
+    setCommuteDays(data);
+    setIsLoading(false);
   }, [year, month]);
 
   useEffect(() => {
-    isMountedRef.current = true;
-    loadData();
-    return () => { isMountedRef.current = false; };
-  }, [loadData]);
+      loadData();
+    }, [loadData]);
 
   // Listen to external commute updates (e.g., from other tabs)
   useEffect(() => {
@@ -45,25 +39,25 @@ export function useCommute(year: number, month: number) {
   }, [commuteDays]);
 
   const setTransportForDate = useCallback((date: string, transportType: TransportType | null) => {
-      // Compute the new days array
-      const newDays = transportType === null
-        ? commuteDays.filter(d => d.date !== date)
-        : (() => {
-            const existingIndex = commuteDays.findIndex(d => d.date === date);
-            if (existingIndex >= 0) {
-              const updated = [...commuteDays];
-              updated[existingIndex] = { date, transportType: transportType! };
-              return updated;
-            } else {
-              return [...commuteDays, { date, transportType: transportType! }];
-            }
-          })();
+    // Compute the new days array
+    const newDays = transportType === null
+      ? commuteDays.filter(d => d.date !== date)
+      : (() => {
+          const existingIndex = commuteDays.findIndex(d => d.date === date);
+          if (existingIndex >= 0) {
+            const updated = [...commuteDays];
+            updated[existingIndex] = { date, transportType: transportType! };
+            return updated;
+          } else {
+            return [...commuteDays, { date, transportType: transportType! }];
+          }
+        })();
 
-      // Update local state immediately
-      setCommuteDays(newDays);
-      // Persist the same computed array (don't re-read from KV!)
-      commuteStorage.saveMonth(year, month, newDays).catch(console.error);
-    }, [year, month, commuteDays]);
+    // Update local state immediately
+    setCommuteDays(newDays);
+    // Persist the same computed array (don't re-read from KV!)
+    commuteStorage.saveMonth(year, month, newDays).catch(console.error);
+  }, [year, month, commuteDays]);
 
   return {
     commuteDays,
