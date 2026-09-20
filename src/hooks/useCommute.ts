@@ -44,26 +44,26 @@ export function useCommute(year: number, month: number) {
     return day?.transportType ?? null;
   }, [commuteDays]);
 
-  const setTransportForDate = useCallback(async (date: string, transportType: TransportType | null) => {
-    if (transportType === null) {
-      // Clear the selection locally
-      setCommuteDays(prev => prev.filter(d => d.date !== date));
-    } else {
-      // Update local state immediately for responsive UI
-      setCommuteDays(prev => {
-        const existingIndex = prev.findIndex(d => d.date === date);
-        if (existingIndex >= 0) {
-          const updated = [...prev];
-          updated[existingIndex] = { date, transportType };
-          return updated;
-        } else {
-          return [...prev, { date, transportType }];
-        }
-      });
-      // Then persist to storage (fire and forget, event will handle cross-tab sync)
-      commuteStorage.upsertDay(year, month, date, transportType).catch(console.error);
-    }
-  }, [year, month]);
+  const setTransportForDate = useCallback((date: string, transportType: TransportType | null) => {
+      // Compute the new days array
+      const newDays = transportType === null
+        ? commuteDays.filter(d => d.date !== date)
+        : (() => {
+            const existingIndex = commuteDays.findIndex(d => d.date === date);
+            if (existingIndex >= 0) {
+              const updated = [...commuteDays];
+              updated[existingIndex] = { date, transportType: transportType! };
+              return updated;
+            } else {
+              return [...commuteDays, { date, transportType: transportType! }];
+            }
+          })();
+
+      // Update local state immediately
+      setCommuteDays(newDays);
+      // Persist the same computed array (don't re-read from KV!)
+      commuteStorage.saveMonth(year, month, newDays).catch(console.error);
+    }, [year, month, commuteDays]);
 
   return {
     commuteDays,
