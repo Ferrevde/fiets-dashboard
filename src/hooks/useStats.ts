@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useCommute } from './useCommute';
 import { settingsStorage } from '../lib/storage';
 import { on } from '../lib/events';
 import { getWorkdaysForMonth } from '../lib/belgianHolidays';
@@ -21,14 +20,21 @@ interface MonthData {
 
 /**
  * Provides live monthly and yearly statistics for a given year.
- *
- * The monthly breakdown is recomputed automatically when the user changes
- * a transport selection (via `useCommute`) or when settings change in
- * another tab/component (via the storage event bus).
+ * Receives commute data from parent (via useCommute) to avoid duplicate hooks.
+ * If commute data not provided, loads from storage (for Dashboard page).
  */
-export function useStats(year: number, month: number) {
+export function useStats(
+  year: number,
+  month: number,
+  commuteDays?: CommuteDay[],
+  workdays?: string[],
+  isLoading?: boolean
+) {
   const [settingsVersion, setSettingsVersion] = useState(0);
   const [settings, setSettings] = useState<Settings>({ bikeCompensationPerKm: 0.25, oneWayDistanceKm: 5, carCostPerKm: 0.15 });
+  const [localWorkdays, setLocalWorkdays] = useState<string[]>([]);
+  const [localCommuteDays, setLocalCommuteDays] = useState<CommuteDay[]>([]);
+  const [localIsLoading, setLocalIsLoading] = useState(true);
 
   // Load settings initially
   useEffect(() => {
@@ -47,23 +53,45 @@ export function useStats(year: number, month: number) {
     });
   }, []);
 
-  const { commuteDays, workdays, isLoading } = useCommute(year, month);
+  // If commute data not provided (Dashboard), load from storage
+  const useLocalData = !commuteDays;
+  
+  useEffect(() => {
+    if (!useLocalData) return;
+    let mounted = true;
+    const load = async () => {
+      setLocalIsLoading(true);
+      const wds = getWorkdaysForMonth(year, month);
+      setLocalWorkdays(wds);
+      const data = await commuteStorage.loadMonth(year, month);
+      if (mounted) {
+        setLocalCommuteDays(data);
+        setLocalIsLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [year, month, useLocalData]);
+
+  const effectiveCommuteDays = commuteDays ?? localCommuteDays;
+  const effectiveWorkdays = workdays ?? localWorkdays;
+  const effectiveIsLoading = isLoading ?? localIsLoading;
 
   const monthly: MonthlyStats = useMemo(() => {
-    return calculateMonthlyStats(year, month, commuteDays, settings, workdays.length);
-  }, [year, month, commuteDays, settings, workdays.length]);
+    return calculateMonthlyStats(year, month, effectiveCommuteDays, settings, effectiveWorkdays.length);
+  }, [year, month, effectiveCommuteDays, settings, effectiveWorkdays.length]);
 
   const loadAllMonths = useCallback(async (): Promise<MonthData[]> => {
     const monthsData: MonthData[] = [];
     for (let m = 1; m <= 12; m++) {
       const total = getWorkdaysForMonth(year, m).length;
-      // For the active month we already have the freshest data via
-      // `useCommute`. For other months we read from storage.
-      const days = m === month ? commuteDays : await commuteStorage.loadMonth(year, m);
+      // For the active month we already have the freshest data via parent.
+      // For other months we read from storage.
+      const days = m === month ? effectiveCommuteDays : await commuteStorage.loadMonth(year, m);
       monthsData.push({ month: m, days, totalWorkdays: total });
     }
     return monthsData;
-  }, [year, month, commuteDays]);
+  }, [year, month, effectiveCommuteDays]);
 
   const [yearly, setYearly] = useState<YearlyStats>({
     year,
@@ -90,5 +118,5 @@ export function useStats(year: number, month: number) {
     return () => { mounted = false; };
   }, [year, settings, settingsVersion, loadAllMonths]);
 
-  return { monthly, yearly, settings, isLoading };
+  return { monthly, yearly, settings, isLoading: effectiveIsLoading };
 }

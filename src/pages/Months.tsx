@@ -32,11 +32,11 @@ export function Months() {
   const [currentYear, setCurrentYear] = useState(2026);
 
   const selectedMonthData = months.find(m => m.key === selectedMonth);
-  const selectedMonthNumber = selectedMonthData?.number ?? 1;
+    const selectedMonthNumber = selectedMonthData?.number ?? 1;
 
-  const { workdays, isLoading, getTransportForDate, setTransportForDate } = useCommute(currentYear, selectedMonthNumber);
-  const { monthly } = useStats(currentYear, selectedMonthNumber);
-  const hasData = hasAnyCommuteActivity(monthly);
+    const { workdays, isLoading, getTransportForDate, setTransportForDate, commuteDays } = useCommute(currentYear, selectedMonthNumber);
+    const { monthly } = useStats(currentYear, selectedMonthNumber, commuteDays, workdays, isLoading);
+    const hasData = hasAnyCommuteActivity(monthly);
 
   return (
     <div className="space-y-4">
