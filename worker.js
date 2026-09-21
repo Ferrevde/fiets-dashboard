@@ -96,7 +96,7 @@ export default {
       if (key.startsWith('fiets-commute-')) {
         if (request.method === 'GET') {
           const data = await env.KV.get(key, 'json');
-          return new Response(JSON.stringify(data?.days || []), { headers: corsHeaders });
+          return new Response(JSON.stringify(data || { days: [] }), { headers: corsHeaders });
         }
 
         if (request.method === 'POST') {
