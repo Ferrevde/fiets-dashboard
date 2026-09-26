@@ -32,11 +32,11 @@ export function Months() {
   const [currentYear, setCurrentYear] = useState(2026);
 
   const selectedMonthData = months.find(m => m.key === selectedMonth);
-    const selectedMonthNumber = selectedMonthData?.number ?? 1;
+  const selectedMonthNumber = selectedMonthData?.number ?? 1;
 
-    const { workdays, isLoading, getTransportForDate, setTransportForDate, commuteDays } = useCommute(currentYear, selectedMonthNumber);
-    const { monthly } = useStats(currentYear, selectedMonthNumber, commuteDays, workdays, isLoading);
-    const hasData = hasAnyCommuteActivity(monthly);
+  const { workdays, isLoading, getTransportForDate, setTransportForDate, commuteDays } = useCommute(currentYear, selectedMonthNumber);
+  const { monthly } = useStats(currentYear, selectedMonthNumber, commuteDays, workdays, isLoading);
+  const hasData = hasAnyCommuteActivity(monthly);
 
   return (
     <div className="space-y-4">
@@ -75,16 +75,15 @@ export function Months() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left: daily list */}
         <div className="lg:col-span-3">
-          <Card variant="hover" padding="md">
+          <Card variant="hover" padding="md" className="h-full">
             <CardContent className="p-0">
               <WorkdayList
-                workdays={workdays}
-                year={currentYear}
-                month={selectedMonthNumber}
-                getTransportForDate={getTransportForDate}
-                onTransportChange={setTransportForDate}
-                isLoading={isLoading}
-              />
+                                            workdays={workdays}
+                                            month={selectedMonthNumber}
+                                            getTransportForDate={getTransportForDate}
+                                            onTransportChange={setTransportForDate}
+                                            isLoading={isLoading}
+                                          />
             </CardContent>
           </Card>
         </div>
